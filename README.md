@@ -5,6 +5,8 @@
 docker compose -d --build
 ```
 ## App Traces example
+
+GET /api/patient - задержка от 1 до 6 сек
 ```clojure
 (defn get-patients [{:keys [biff/ds]}]
   (span/with-span! "Fetch all patients"
@@ -24,7 +26,6 @@ docker compose -d --build
 
 ## Jaeger
 ![image](https://github.com/user-attachments/assets/23f47f3a-646c-4fef-a907-e2a9110b797e)
-
 ![image](https://github.com/user-attachments/assets/2d10db01-5fc4-467d-85f2-4f314bc4c58e)
 
 
