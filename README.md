@@ -4,58 +4,32 @@
 ```
 docker compose -d --build
 ```
-## App
-
-### Logging
+## App Traces example
 ```clojure
 (defn get-patients [{:keys [biff/ds]}]
-  (metrics/inc-get-patient)
-  (log/info "get patients info")
-  (log/error "get patients error")
-  {:status 200
-   :body (mapv map-json-out (pg/patients ds))})
+  (span/with-span! "Fetch all patients"
+    (metrics/inc-get-patient)
+    (log/info "get patients info")
+    (log/error "get patients error")
+    (Thread/sleep (+ 1000 (rand-int 5000)))
+    (let [patients
+          (span/with-span! "Fetch patients from database"
+            {:attributes {:db.operation "select"}}
+            (pg/patients ds))
+          result (span/with-span! "Transform Patients to json"
+                   (mapv map-json-out patients))]
+      {:status 200
+       :body result})))
 ```
-### Logback
-Push на `http://loki:3100/loki/api/v1/push`
-```
-<configuration>
-    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
-        <http>
-            <url>http://loki:3100/loki/api/v1/push</url>
-        </http>
-        <format>
-            <label>
-                <pattern>app=my-app,host=${HOSTNAME}</pattern>
-            </label>
-            <message>
-                <pattern>%-5level [%.5(${HOSTNAME})] %.10thread %logger{20} | %msg %ex</pattern>
-            </message>
-        </format>
-    </appender>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+## Jaeger
+![image](https://github.com/user-attachments/assets/23f47f3a-646c-4fef-a907-e2a9110b797e)
 
-    <root level="info">
-        <appender-ref ref="LOKI"/>
-        <appender-ref ref="STDOUT"/>
-    </root>
+![image](https://github.com/user-attachments/assets/2d10db01-5fc4-467d-85f2-4f314bc4c58e)
 
-    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
-```
 
 ## Grafana
-LogQL:
-```
-{app="my-app"}
-```
-```
-{app="my-app"} |= "error"
-```
-```
-sum(rate({app="my-app"}[1m])) by (level)
-```
-![image](https://github.com/user-attachments/assets/c7d90d0f-8df3-4b0e-abf2-288a959dda6f)
+TraceQL
+![image](https://github.com/user-attachments/assets/997f1a8b-42a2-4cc6-80b7-942d8ee5a951)
+![image](https://github.com/user-attachments/assets/b76afafb-e1da-4caa-86ec-048dd5d48335)
+
