@@ -1,0 +1,6 @@
+.git
+node_modules
+.cpcache
+storage
+grafana-data
+victoriametrics-data

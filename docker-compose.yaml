@@ -1,0 +1,107 @@
+services:
+  swagger-ui:
+    container_name: lab-swagger
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8081:8080"
+    volumes:
+      # get from openapi directory
+      - ./openapi:/usr/share/nginx/html/openapi
+    environment:
+      SWAGGER_JSON: /openapi
+      URL: "openapi/patient.yaml"
+    networks:
+      - my-network
+
+  database:
+    container_name: lab-postgres
+    image: postgres:16
+    volumes:
+      - ./storage/pgdata:/var/lib/postgresql/data/
+      - ${PWD}/grafana-dashboards/:/var/lib/grafana/dashboards/
+
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${PROD_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${PROD_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${PROD_POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    networks:
+      - my-network
+
+  app:
+    depends_on: [database, loki]
+    container_name: lab-app
+    build:
+      context: . # This specifies the directory containing the Dockerfile
+    image: my-app
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      BIFF_PROFILE: dev
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    networks:
+      - my-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: "prometheus"
+    user: "1000:1000"
+    networks:
+      - my-network
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus-data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.listen-address=:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    restart: always
+    networks:
+      - my-network
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: victoriametrics
+    ports:
+      - "8428:8428"
+    volumes:
+      - ./victoriametrics-data:/victoria-metrics-data
+    restart: always
+    networks:
+      - my-network
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - my-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.58.1
+    ports:
+      - "16686:16686" # порт для интерфейса Jaeger
+      - "4318:4318" # порт для OTLP (OpenTelemetry Protocol)
+    networks:
+      - my-network
+    restart: always
+
+networks:
+  my-network: {}

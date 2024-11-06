@@ -1,0 +1,269 @@
+openapi: 3.1.0
+info:
+  title: Patient API
+  version: 1.0.0
+  description: API for managing Patient resource
+
+tags:
+  - name: patient-crud
+    description: Patient CRUD
+
+servers:
+  - url: http://localhost:8080
+    description: Local server 2
+
+paths:
+  /api/patient:
+    get:
+      tags: ["patient-crud"]
+      operationId: getPatients
+      summary: Retrieve a list of patients
+      description: Retrieve a list of patients with optional filtering by fields.
+      responses:
+        "200":
+          description: A list of patients.
+          content:
+            application/json:
+              examples:
+                twoPatients:
+                  $ref: "#/components/examples/twoPatients"
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Patient"
+        "400":
+          description: Bad request due to invalid query parameters.
+        "500":
+          description: Internal server error.
+
+    post:
+      summary: Create a new patient
+      description: Add a new patient to the system.
+      operationId: postPatient
+      tags: ["patient-crud"]
+      requestBody:
+        description: patient
+        required: true
+        content:
+          application/json:
+            examples:
+              patientNoId:
+                $ref: "#/components/examples/patientNoId"
+            schema:
+              $ref: "#/components/schemas/PatientInput"
+      responses:
+        "201":
+          description: Patient created successfully.
+          content:
+            application/json:
+              examples:
+                patientExample1:
+                  $ref: "#/components/examples/patient1"
+              schema:
+                $ref: "#/components/schemas/Patient"
+        "400":
+          description: Invalid input data.
+
+  /api/patient/{id}:
+    get:
+      tags: ["patient-crud"]
+      summary: Retrieve a patient by ID
+      description: Get a single patient by their unique ID.
+      operationId: getPatientById
+      parameters:
+        - in: path
+          name: id
+          example: "1"
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the patient.
+      responses:
+        "200":
+          description: Patient details.
+          content:
+            application/json:
+              examples:
+                patient1:
+                  $ref: "#/components/examples/patient1"
+              schema:
+                $ref: "#/components/schemas/Patient"
+        "404":
+          description: Patient not found.
+
+    put:
+      tags: ["patient-crud"]
+      summary: Update an existing patient
+      description: Update the details of an existing patient.
+      operationId: putPatient
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          example: "1"
+          description: The unique identifier of the patient to update.
+      requestBody:
+        required: true
+        description: patient
+        content:
+          application/json:
+            examples:
+              patient1:
+                $ref: "#/components/examples/patientNoId"
+            schema:
+              $ref: "#/components/schemas/PatientInput"
+      responses:
+        "200":
+          description: Patient updated successfully.
+          content:
+            application/json:
+              examples:
+                patient1:
+                  $ref: "#/components/examples/patient1"
+              schema:
+                $ref: "#/components/schemas/Patient"
+        "400":
+          description: Invalid patient .
+        "404":
+          description: Patient with such id not found.
+
+    delete:
+      tags: ["patient-crud"]
+      summary: Delete a patient
+      description: Remove a patient from the system.
+      operationId: deletePatient
+      parameters:
+        - in: path
+          name: id
+          required: true
+          example: "1"
+          schema:
+            type: string
+          description: The unique identifier of the patient to delete.
+      responses:
+        "204":
+          description: Patient deleted successfully.
+        "404":
+          description: Patient with such id not found.
+
+components:
+  schemas:
+    Patient:
+      description: Patient from GET responses.
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1"
+          description: Unique identifier for the patient.
+        firstName:
+          type: string
+          example: Svyat
+          description: Patient's first name.
+        lastName:
+          type: string
+          example: Krivosheev
+          description: Patient's last name.
+        ssn:
+          type: string
+          example: 111-22-3333
+          description: Patient's Social Security Number.
+          pattern: '^\d{3}-\d{2}-\d{4}$'
+        sex:
+          type: string
+          enum: [male, female, unknown]
+          example: female
+          description: Patient's sex.
+        contactPhone:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+          example: "+79999999999"
+          description: Patient's contact phone number.
+        email:
+          type: string
+          example: example@example.com
+          format: email
+          description: Patient's email address.
+      required:
+        - id
+        - firstName
+        - lastName
+        - ssn
+        - sex
+
+    PatientInput:
+      type: object
+      description: Patient used in PUT and POST operations. Like Patient, but without id.
+      properties:
+        firstName:
+          type: string
+          example: Svyat
+          description: Patient's first name.
+        lastName:
+          type: string
+          example: Krivosheev
+          description: Patient's last name.
+        ssn:
+          type: string
+          example: 111-22-3333
+          description: Patient's Social Security Number.
+          pattern: '^\d{3}-\d{2}-\d{4}$'
+        sex:
+          type: string
+          enum: [male, female, other, unknown]
+          example: male
+          description: Patient's sex.
+        contactPhone:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+          example: "+79999999999"
+          description: Patient's contact phone number.
+        email:
+          type: string
+          format: email
+          example: example@example.com
+          description: Patient's email address.
+      required:
+        - firstName
+        - lastName
+        - ssn
+        - sex
+  examples:
+    patient1:
+      description: first patient example
+      value:
+        id: "1"
+        firstName: Svyat
+        lastName: Krivosheev
+        ssn: 123-45-6789
+        sex: male
+        contactPhone: "+79999999999"
+        email: a@example.com
+    twoPatients:
+      description: two patients
+      value:
+        - id: "1"
+          firstName: Svyat
+          lastName: Krivosheev
+          ssn: 123-45-6789
+          sex: male
+          contactPhone: "+79999999999"
+          email: a@example.com
+        - id: "2"
+          firstName: John
+          lastName: Addams
+          ssn: 123-45-6780
+          sex: male
+          contactPhone: "+79999999990"
+          email: b@example.com
+    patientNoId:
+      description: first patient without id
+      value:
+        firstName: Svyat
+        lastName: Krivosheev
+        ssn: 123-45-6789
+        sex: male
+        contactPhone: "+79999999999"
+        email: a@example.com

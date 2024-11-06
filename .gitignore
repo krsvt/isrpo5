@@ -1,0 +1,17 @@
+/.cpcache
+/.nrepl-port
+/bin
+/config.edn
+/config.sh
+/config.env
+/secrets.env
+/storage/
+/tailwindcss
+/target
+.calva/
+.clj-kondo/
+.lsp/
+.portal/
+grafana-data/
+victoriametrics-data/
+prometheus-data/
