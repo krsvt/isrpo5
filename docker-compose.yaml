@@ -1,4 +1,13 @@
 services:
+  init:
+    image: &tempoImage grafana/tempo:latest
+    user: root
+    entrypoint:
+      - "chown"
+      - "10001:10001"
+      - "/var/tempo"
+    volumes:
+      - ./tempo-data:/var/tempo
   swagger-ui:
     container_name: lab-swagger
     image: swaggerapi/swagger-ui
@@ -32,7 +41,7 @@ services:
       - my-network
 
   app:
-    depends_on: [database, loki]
+    depends_on: [database, loki, tempo]
     container_name: lab-app
     build:
       context: . # This specifies the directory containing the Dockerfile
@@ -43,7 +52,7 @@ services:
       - .env
     environment:
       BIFF_PROFILE: dev
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4318"
     networks:
       - my-network
 
@@ -70,6 +79,8 @@ services:
       - "3000:3000"
     volumes:
       - ./grafana-data:/var/lib/grafana
+    depends_on:
+      - tempo
     restart: always
     networks:
       - my-network
@@ -98,10 +109,29 @@ services:
     image: jaegertracing/all-in-one:1.58.1
     ports:
       - "16686:16686" # порт для интерфейса Jaeger
-      - "4318:4318" # порт для OTLP (OpenTelemetry Protocol)
+      # - "4318:4318" # порт для OTLP (OpenTelemetry Protocol)
     networks:
       - my-network
     restart: always
+
+  tempo:
+    image: *tempoImage
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+      - ./tempo-data:/var/tempo
+    ports:
+      - "14268:14268" # jaeger ingest
+      - "3200:3200" # tempo
+      # - "9095:9095" # tempo grpc
+      - "4317:4317" # otlp grpc
+      - "4318:4318" # otlp http
+      # - "9411:9411" # zipkin
+    networks:
+      - my-network
+    restart: always
+    depends_on:
+      - init
 
 networks:
   my-network: {}
