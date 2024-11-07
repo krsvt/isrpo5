@@ -4,10 +4,45 @@
 ```
 docker compose -d --build
 ```
-## App Traces example
+## App 
+
+### Traces Library
+https://github.com/steffan-westcott/clj-otel
+
+Adding dependency in deps.edn:
+```
+com.github.steffan-westcott/clj-otel-api {:mvn/version "0.2.7"}
+```
+
+### Traces Docker setup
+```Dockerfile
+COPY opentelemetry-javaagent.jar opentelemetry-javaagent.jar
+...
+CMD ["/usr/bin/java", <...>, "-javaagent:opentelemetry-javaagent.jar", "-Dotel.resource.attributes=service.name=counter-service", "-Dotel.metrics.exporter=none", "-Dotel.logs.exporter=none", "-jar", "app.jar"]
+```
+### Traces middleware init
+
+Using [wrap-server-span](https://cljdoc.org/d/com.github.steffan-westcott/clj-otel-api/0.2.7/api/steffan-westcott.clj-otel.api.trace.http?q=wrap-server-span#wrap-server-span) middleware: 
+
+```clojure
+(require '[steffan-westcott.clj-otel.api.trace.http :as trace-http])
+
+(def handler (-> (biff/reitit-handler {:routes routes})
+                 mid/wrap-base-defaults
+                 trace-http/wrap-server-span)) ;; here
+```
+
+Using tempo exporter endpoint in `docker-compose.yaml`:
+```
+OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4318"
+```
+
+### Traces example
 
 GET /api/patient - задержка от 1 до 6 сек
 ```clojure
+(require '[steffan-westcott.clj-otel.api.trace.span :as span])
+
 (defn get-patients [{:keys [biff/ds]}]
   (span/with-span! "Fetch all patients"
     (metrics/inc-get-patient)
