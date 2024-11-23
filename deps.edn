@@ -61,6 +61,11 @@
                    ]
         :main-opts ["-m" "com.biffweb.task-runner" "tasks/tasks"]}
 
+  :kaocha {:extra-deps {lambdaisland/kaocha {:mvn/version "1.87.1366"}}
+           :jvm-opts   ["-XX:-OmitStackTraceInFastThrow"
+                        "-Xmx12g"]
+           :main-opts  ["-m" "kaocha.runner"]}
+
   :prod {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
                     "-XX:+CrashOnOutOfMemoryError"
                     "-Dbiff.env.BIFF_PROFILE=prod"
