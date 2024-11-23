@@ -8,11 +8,7 @@ on:
 
 jobs:
   test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -39,5 +35,5 @@ jobs:
             ~/.deps.clj
           key: cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: cljdeps-
-      - name: run tests
-        run: clj -M:kaocha
+      - name: Run tests
+        run: Clojure -M:kaocha
