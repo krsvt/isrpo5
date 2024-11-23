@@ -36,4 +36,4 @@ jobs:
           key: cljdeps-${{ hashFiles('deps.edn') }}
           restore-keys: cljdeps-
       - name: Run tests
-        run: Clojure -M:kaocha
+        run: clojure -M:kaocha
