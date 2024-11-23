@@ -23,14 +23,14 @@ jobs:
       - name: Copy files to VPS
         run: |
           scp -o StrictHostKeyChecking=no \
-            docker-compose.yml .env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:~/lab
+            docker-compose.yaml .env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:~/lab
 
       - name: Deploy with Docker Compose
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
           cd ~/lab
 
-          docker-compose down
+          docker compose down
 
-          docker-compose up -d
+          docker compose up -d
           EOF
