@@ -44,9 +44,11 @@
         ch.qos.logback/logback-classic                {:mvn/version "1.4.11"}
         ;; net.logstash.logback/logstash-logback-encoder {:mvn/version "7.4"}
         ;; ch.codesmith/logger                           {:mvn/version "0.7.108"}
-        com.github.loki4j/loki-logback-appender {:mvn/version "1.5.2"}
+        ;; com.github.loki4j/loki-logback-appender {:mvn/version "1.5.2"}
+        ;;
+        ;; com.github.steffan-westcott/clj-otel-api {:mvn/version "0.2.7"}
 
-        com.github.steffan-westcott/clj-otel-api {:mvn/version "0.2.7"}}
+        }
  :aliases
  {:dev {:extra-deps {com.biffweb/tasks {:git/url "https://github.com/jacobobryant/biff",
                                         :git/sha "ada149e", :git/tag "v1.8.2", :deps/root "libs/tasks"}}
@@ -54,10 +56,10 @@
         :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
                    "-XX:+CrashOnOutOfMemoryError"
                    "-Dbiff.env.BIFF_PROFILE=dev"
-                   "-javaagent:opentelemetry-javaagent.jar"
-                   "-Dotel.resource.attributes=service.name=counter-service"
-                   "-Dotel.metrics.exporter=none"
-                   "-Dotel.logs.exporter=none"
+                   ;; "-javaagent:opentelemetry-javaagent.jar"
+                   ;; "-Dotel.resource.attributes=service.name=counter-service"
+                   ;; "-Dotel.metrics.exporter=none"
+                   ;; "-Dotel.logs.exporter=none"
                    ]
         :main-opts ["-m" "com.biffweb.task-runner" "tasks/tasks"]}
 
@@ -69,9 +71,9 @@
   :prod {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
                     "-XX:+CrashOnOutOfMemoryError"
                     "-Dbiff.env.BIFF_PROFILE=prod"
-                    "-javaagent:opentelemetry-javaagent.jar"
-                    "-Dotel.resource.attributes=service.name=counter-service"
-                    "-Dotel.metrics.exporter=none"
-                    "-Dotel.logs.exporter=none"
+                    ;; "-javaagent:opentelemetry-javaagent.jar"
+                    ;; "-Dotel.resource.attributes=service.name=counter-service"
+                    ;; "-Dotel.metrics.exporter=none"
+                    ;; "-Dotel.logs.exporter=none"
                     ]
          :main-opts ["-m" "lab"]}}}

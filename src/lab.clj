@@ -9,8 +9,8 @@
             [clojure.tools.namespace.repl :as tn-repl]
             [next.jdbc :as jdbc]
 
-            [steffan-westcott.clj-otel.api.trace.http :as trace-http]
-            [steffan-westcott.clj-otel.api.trace.span :as span]
+            ;; [steffan-westcott.clj-otel.api.trace.http :as trace-http]
+            ;; [steffan-westcott.clj-otel.api.trace.span :as span]
             [nrepl.cmdline :as nrepl-cmd])
   (:gen-class))
 
@@ -24,8 +24,7 @@
               (keep :api-routes modules)]])
 
 (def handler (-> (biff/reitit-handler {:routes routes})
-                 mid/wrap-base-defaults
-                 trace-http/wrap-server-span))
+                 mid/wrap-base-defaults))
 
 (def static-pages (apply biff/safe-merge (map :static modules)))
 

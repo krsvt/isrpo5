@@ -15,7 +15,7 @@ COPY src ./src
 COPY dev ./dev
 COPY resources ./resources
 COPY deps.edn .
-COPY opentelemetry-javaagent.jar opentelemetry-javaagent.jar
+# COPY opentelemetry-javaagent.jar opentelemetry-javaagent.jar
 
 RUN clj -M:dev uberjar && cp target/jar/app.jar . && rm -r target
 RUN rm -rf src dev resources deps.edn
@@ -23,4 +23,4 @@ RUN rm -rf src dev resources deps.edn
 EXPOSE 8080
 
 ENV BIFF_PROFILE=dev
-CMD ["/usr/bin/java", "-XX:-OmitStackTraceInFastThrow", "-XX:+CrashOnOutOfMemoryError", "-Dbiff.env.BIFF_PROFILE=dev", "-javaagent:opentelemetry-javaagent.jar", "-Dotel.resource.attributes=service.name=counter-service", "-Dotel.metrics.exporter=none", "-Dotel.logs.exporter=none", "-jar", "app.jar"]
+CMD ["/usr/bin/java", "-XX:-OmitStackTraceInFastThrow", "-XX:+CrashOnOutOfMemoryError", "-Dbiff.env.BIFF_PROFILE=dev", "-jar", "app.jar"]

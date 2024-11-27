@@ -3,11 +3,11 @@
    [lab.util.postgres :as pg]
    [medley.core :as medley]
    [clojure.string :as str]
-   [clojure.tools.logging :as log]
-   [iapetos.collector.ring :as ring]
-   [steffan-westcott.clj-otel.api.trace.http :as trace-http]
-   [steffan-westcott.clj-otel.api.trace.span :as span]
-   [lab.metrics :as metrics]))
+   ;; [clojure.tools.logging :as log]
+   ;; [iapetos.collector.ring :as ring]
+   ;; [steffan-westcott.clj-otel.api.trace.http :as trace-http]
+   ;; [steffan-westcott.clj-otel.api.trace.span :as span]
+   #_[lab.metrics :as metrics]))
 
 (set! *warn-on-reflection* true)
 
@@ -28,22 +28,29 @@
   (medley/map-keys snakecase->camelcase json))
 
 (defn get-patients [{:keys [biff/ds]}]
-  (span/with-span! "Fetch all patients"
-    (metrics/inc-get-patient)
-    (log/info "get patients info")
-    (log/error "get patients error")
-    (Thread/sleep (+ 1000 (rand-int 5000)))
-    (let [patients
-          (span/with-span! "Fetch patients from database"
-            {:attributes {:db.operation "select"}}
-            (pg/patients ds))
-          result (span/with-span! "Transform Patients to json"
-                   (mapv map-json-out patients))]
+  (let [patients (pg/patients ds)
+        result (mapv map-json-out patients)]
       {:status 200
-       :body result})))
+       :body result})
+
+  ;; (span/with-span! "Fetch all patients"
+  ;;   (metrics/inc-get-patient)
+  ;;   (log/info "get patients info")
+  ;;   (log/error "get patients error")
+  ;;   (Thread/sleep (+ 1000 (rand-int 5000)))
+  ;;   (let [patients
+  ;;         (span/with-span! "Fetch patients from database"
+  ;;           {:attributes {:db.operation "select"}}
+  ;;           (pg/patients ds))
+  ;;         result (span/with-span! "Transform Patients to json"
+  ;;                  (mapv map-json-out patients))]
+  ;;     {:status 200
+  ;;      :body result}))
+
+  )
 
 (defn add-patient [{:keys [biff/ds params]}]
-  (span/with-span! "Adding new patient"
+  #_(span/with-span! "Adding new patient"
     (try
       (let [params (span/with-span! "Transforming input json" (map-json-in params))
             pat (span/with-span! "Insert patient to database"
@@ -68,7 +75,7 @@
     (cond
       pat
       (do
-        (metrics/inc-get-patient)
+        ;; (metrics/inc-get-patient)
         {:status 200
        :body (map-json-out pat)})
       :else
@@ -95,8 +102,10 @@
       {:status 404})))
 
 (def module
-  {:api-routes [["/metrics"
-                 {:get metrics/metrics-handler}]
+  {:api-routes [
+
+                ;; ["/metrics"
+                ;;  {:get metrics/metrics-handler}]
 
                 ["/api/patient"
                  ["" {:post add-patient
